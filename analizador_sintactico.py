@@ -15,7 +15,7 @@ precedence = (
 nombres = {}
 
 def p_declaracion_asignar(t):
-    'declaracion :  IDENTIFICADOR ASIGNAR expresion PUNTOCOMA'
+    'declaracion :  dec IDENTIFICADOR ASIGNAR expresion PUNTOCOMA'
     nombres[t[1]] = t[3]
 
 def p_declaracion_expr(t):
@@ -25,35 +25,20 @@ def p_declaracion_expr(t):
 #expresiones complejas
 def p_expresion_formulascomplejas(t):
     '''
-    expresion : IDENTIFICADOR ASIGNAR expresion SUMA PARIZQ expresion SUMA expresion PARDER PUNTOCOMA
-              | IDENTIFICADOR ASIGNAR expresion SUMA PARIZQ expresion RESTA expresion PARDER PUNTOCOMA
-              | IDENTIFICADOR ASIGNAR expresion RESTA PARIZQ expresion SUMA expresion PARDER PUNTOCOMA
-              | IDENTIFICADOR ASIGNAR expresion RESTA PARIZQ expresion RESTA expresion PARDER PUNTOCOMA
-              | IDENTIFICADOR ASIGNAR expresion MULT PARIZQ expresion SUMA expresion PARDER PUNTOCOMA
-              | IDENTIFICADOR ASIGNAR expresion MULT PARIZQ expresion RESTA expresion PARDER PUNTOCOMA
-              | IDENTIFICADOR ASIGNAR expresion SUMA PARIZQ expresion MULT expresion PARDER PUNTOCOMA
-              | IDENTIFICADOR ASIGNAR expresion RESTA PARIZQ expresion MULT expresion PARDER PUNTOCOMA
-              | IDENTIFICADOR ASIGNAR PARIZQ expresion RESTA expresion PARDER DIV expresion PUNTOCOMA
-              | IDENTIFICADOR ASIGNAR PARIZQ expresion SUMA  expresion PARDER DIV expresion PUNTOCOMA
-              | IDENTIFICADOR ASIGNAR PARIZQ expresion RESTA expresion PARDER MULT expresion PUNTOCOMA
-              | IDENTIFICADOR ASIGNAR PARIZQ expresion SUMA  expresion PARDER MULT expresion PUNTOCOMA
+    expresion : expresion SUMA PARIZQ expresion SUMA expresion PARDER
+              | expresion SUMA PARIZQ expresion RESTA expresion PARDER
+              | expresion RESTA PARIZQ expresion SUMA expresion PARDER 
+              | expresion RESTA PARIZQ expresion RESTA expresion PARDER 
+              | expresion MULT PARIZQ expresion SUMA expresion PARDER 
+              | expresion MULT PARIZQ expresion RESTA expresion PARDER
+              | expresion SUMA PARIZQ expresion MULT expresion PARDER
+              | expresion RESTA PARIZQ expresion MULT expresion PARDER
+              | PARIZQ expresion RESTA expresion PARDER DIV expresion
+              | PARIZQ expresion SUMA  expresion PARDER DIV expresion
+              | PARIZQ expresion RESTA expresion PARDER MULT expresion
+              | ASIGNAR PARIZQ expresion SUMA  expresion PARDER MULT expresion 
     '''
-    if t[2] == '+':
-        t[0] = "SINTAXIS CORRECTA"
-    elif t[2] == '-':
-        t[0] = "SINTAXIS CORRECTA"
-    elif t[2] == '*':
-        t[0] = "SINTAXIS CORRECTA" 
-    elif t[2] == '/':
-        t[0] = "SINTAXIS CORRECTA"
-    elif t[2] == '%':
-        t[0] = "SINTAXIS CORRECTA"
-    elif t[2] == '**':
-        i = t[3]
-        t[0] = "SINTAXIS CORRECTA"
-        #while i > 1:
-         #   t[0] *= t[1]
-          #  i -= 1
+    t[1]=t[0]
 
 def p_expresion_operaciones(t):
     '''
@@ -66,22 +51,7 @@ def p_expresion_operaciones(t):
                
 
     '''
-    if t[2] == '+':
-        t[0] = t[1] + t[3]
-    elif t[2] == '-':
-        t[0] = t[1] - t[3]
-    elif t[2] == '*':
-        t[0] = t[1] * t[3]
-    elif t[2] == '/':
-        t[0] = t[1] / t[3]
-    elif t[2] == '%':
-        t[0] = t[1] % t[3]
-    elif t[2] == '**':
-        i = t[3]
-        t[0] = t[1]
-        while i > 1:
-            t[0] *= t[1]
-            i -= 1
+    t[1]=t[0]
 
 def p_expresion_uminus(t):
     'expresion : RESTA expresion %prec UMINUS'
@@ -110,24 +80,8 @@ def p_expresion_logicas(t):
                 |  PARIZQ  expresion PARDER IGUAL PARIZQ expresion PARDER
                 |  PARIZQ  expresion PARDER DISTINTO PARIZQ expresion PARDER
     '''
-    if t[2] == "<": t[0] = t[1] < t[3]
-    elif t[2] == ">": t[0] = t[1] > t[3]
-    elif t[2] == "<=": t[0] = t[1] <= t[3]
-    elif t[2] == ">=": t[0] = t[1] >= t[3]
-    elif t[2] == "==": t[0] = t[1] is t[3]
-    elif t[2] == "!=": t[0] = t[1] != t[3]
-    elif t[3] == "<":
-        t[0] = t[2] < t[4]
-    elif t[2] == ">":
-        t[0] = t[2] > t[4]
-    elif t[3] == "<=":
-        t[0] = t[2] <= t[4]
-    elif t[3] == ">=":
-        t[0] = t[2] >= t[4]
-    elif t[3] == "==":
-        t[0] = t[2] is t[4]
-    elif t[3] == "!=":
-        t[0] = t[2] != t[4]
+    t[1]=t[0]
+
 
     # print('logica ',[x for x in t])
 
@@ -141,6 +95,7 @@ def p_expresion_booleana(t):
                 |  PARIZQ expresion OR expresion PARDER
                 |  PARIZQ expresion NOT expresion PARDER
     '''
+    #operaciones de comprobación
     if t[2] == "&&":
         t[0] = t[1] and t[3]
     elif t[2] == "||":
@@ -159,7 +114,7 @@ def p_expresion_booleana(t):
 def p_expresion_numero(t):
     '''
     expresion : ENTERO
-              | FLOAT       
+              | FLOAT   
     '''
     t[0] = t[1]
 
@@ -192,10 +147,8 @@ def p_expresion_bucles(t):
 
 
     '''
-    if t[2]=="<": t[0]=t[1]<t[3]
-    elif t[2]==">":t[0]=t[1]>t[3]
-    elif t[2]==">=":t[0]=t[1]>=t[3]
-    elif t[2]=="<=":t[0]=t[1]<=t[3]
+    t[1]=t[0]
+
 
 def p_error(t):
     global resultado_gramatica

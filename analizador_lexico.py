@@ -29,6 +29,7 @@ tokens = reservada + (
     'DIV',
     'POTENCIA',
     'MODULO',
+    'dec',
 
    'MINUSMINUS',
    'PLUSPLUS',
@@ -150,14 +151,18 @@ def t_PARA(t):
     r'for'
     return t
 
-def t_ENTERO(t):
-    r'\d+'
-    t.value = int(t.value)
+def t_dec(t):
+    r'int | double'
     return t
 
 def t_DECIMAL(t):
     r'\d+[.]\d+'
     t.value = float(t.value)
+    return t
+
+def t_ENTERO(t):
+    r'\d+'
+    t.value = int(t.value)
     return t
 
 def t_IDENTIFICADOR(t):
