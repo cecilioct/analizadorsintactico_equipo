@@ -6,6 +6,7 @@ import sys
 # resultado del analisis
 resultado_gramatica = []
 
+#orden en que se aplicarán
 precedence = (
     ('right','ASIGNAR'),
     ('left', 'SUMA', 'RESTA'),
@@ -14,15 +15,24 @@ precedence = (
 )
 nombres = {}
 
+#declaraciones: declaracion con asignacion y declaracion sin asignacion
+#Reconoce datos de tipo entero(int) y decimal (double)
 def p_declaracion_asignar(t):
-    'declaracion :  dec IDENTIFICADOR ASIGNAR expresion PUNTOCOMA'
+    '''
+    
+    declaracion :  dec IDENTIFICADOR ASIGNAR expresion PUNTOCOMA 
+                |  dec IDENTIFICADOR PUNTOCOMA
+    '''
+    
     nombres[t[1]] = t[3]
 
 def p_declaracion_expr(t):
     'declaracion : expresion'
-    # print("Resultado: " + str(t[1]))
+    #print("Resultado: " + str(t[1]))
     t[0] = t[1]
-#expresiones complejas
+
+#expresiones complejas con operadores entre parentesis
+#expresione limitadas con multiplicacin y division fuera de los parentesis
 def p_expresion_formulascomplejas(t):
     '''
     expresion : expresion SUMA PARIZQ expresion SUMA expresion PARDER
@@ -40,6 +50,7 @@ def p_expresion_formulascomplejas(t):
     '''
     t[1]=t[0]
 
+#expreisones sobre operaiciones básicas donde no se incluye parentesis.
 def p_expresion_operaciones(t):
     '''
     expresion  :   expresion SUMA expresion
@@ -48,8 +59,6 @@ def p_expresion_operaciones(t):
                 |   expresion DIV expresion
                 |   expresion POTENCIA expresion
                 |   expresion MODULO expresion
-               
-
     '''
     t[1]=t[0]
 
@@ -57,6 +66,8 @@ def p_expresion_uminus(t):
     'expresion : RESTA expresion %prec UMINUS'
     t[0] = -t[2]
 
+#expresiones agrupadas entre:
+#parentesis, llaves y corchetes
 def p_expresion_grupo(t):
     '''
     expresion  : PARIZQ expresion PARDER
@@ -64,7 +75,9 @@ def p_expresion_grupo(t):
                 | CORIZQ expresion CORDER
     '''
     t[0] = t[2]
-# sintactico de expresiones logicas
+
+# operaciones lógicas completo incluye operaciones
+#lógicas entre parentesis
 def p_expresion_logicas(t):
     '''
     expresion   :  expresion MENORQUE expresion 
@@ -83,9 +96,8 @@ def p_expresion_logicas(t):
     t[1]=t[0]
 
 
-    # print('logica ',[x for x in t])
 
-# gramatica de expresiones booleanadas
+# gramatica de expresiones booleanadas simples y con parentesis
 def p_expresion_booleana(t):
     '''
     expresion   :   expresion AND expresion 
@@ -95,22 +107,12 @@ def p_expresion_booleana(t):
                 |  PARIZQ expresion OR expresion PARDER
                 |  PARIZQ expresion NOT expresion PARDER
     '''
-    #operaciones de comprobación
-    if t[2] == "&&":
-        t[0] = t[1] and t[3]
-    elif t[2] == "||":
-        t[0] = t[1] or t[3]
-    elif t[2] == "!":
-        t[0] =  t[1] is not t[3]
-    elif t[3] == "&&":
-        t[0] = t[2] and t[4]
-    elif t[3] == "||":
-        t[0] = t[2] or t[4]
-    elif t[3] == "!":
-        t[0] =  t[2] is not t[4]
+   
+    t[1]=t[0]
 
 
-
+#expresiones para reconocer número 
+#Entero y decimal
 def p_expresion_numero(t):
     '''
     expresion : ENTERO
@@ -118,12 +120,14 @@ def p_expresion_numero(t):
     '''
     t[0] = t[1]
 
+#expresion cadenas
 def p_expresion_cadena(t):
     'expresion : COMDOB expresion COMDOB'
     t[0] = t[2]
 
 
-
+#defincion para una expresionde tipo IDENTIFICADOR
+#Es cualquier palabra que se usa como una variable
 def p_expresion_nombre(t):
     'expresion : IDENTIFICADOR'
     try:
@@ -132,6 +136,9 @@ def p_expresion_nombre(t):
        # print("Nombre desconocido ", t[1])
         t[0] = 0
 
+
+#Bucles WHILE, IF Y FOR con expresiones de tipo operaciones logicas
+#Las sentencias de cada bucle esta limitado en cuanto a las operaciones lógicas
 def p_expresion_bucles(t):
     '''
     expresion : MIENTRAS PARIZQ expresion MENORQUE expresion PARDER LLAIZQ expresion  LLADER
@@ -149,7 +156,8 @@ def p_expresion_bucles(t):
     '''
     t[1]=t[0]
 
-
+#Salida cuando existe un error sintactico
+#Da como salida el tipo de error y el valor en el que se generó
 def p_error(t):
     global resultado_gramatica
     if t:
@@ -165,29 +173,30 @@ def p_error(t):
 # instanciamos el analizador sistactico
 parser = yacc.yacc()
 
+#prueba sintactica
 def prueba_sintactica(data):
     global resultado_gramatica
     resultado_gramatica.clear()
-
+   
     for item in data.splitlines():
         if item:
             gram = parser.parse(item)
             if gram:
-                resultado_gramatica.append(str(gram))
+                resultado_gramatica.append(str(gram)) #resultado de la prueba 
         else: print("data vacia")
 
     print("resultado: ", resultado_gramatica)
 
     
-    if not resultado_gramatica:
-        resultado_gramatica = "Compilacion Exitosa"
+    if not resultado_gramatica: #sino resgresa ningun valor imprime la frase
+        #resultado_gramatica = "Compilacion Exitosa"
         print(resultado_gramatica)
     
     return resultado_gramatica
 if __name__ == "__main__":
+    #lee el archivo donde se encuentra el código para la prueba en c#
     if len(sys.argv) > 1:
         script = sys.argv[1]
-
         scriptfile = open(script, "r")
         scriptdata = scriptfile.read()
         print(chr(27) + "[0;36m" + "INICIA ANALISIS SINTACTICO" + chr(27) + "[0m")
@@ -201,7 +210,7 @@ if __name__ == "__main__":
 
         #prueba_sintactica(s)
 
-else:
+else:   #Instruccion para pasar un archivo para procesar
         print(chr(27) + "[0;31m" + "Pase el archivo de scritp Cs como parametro")
         print(
             chr(27)
@@ -209,7 +218,7 @@ else:
             + "\t$ python AnalizadorLexico.py"
             + chr(27)
             + "[1;31m"
-            + " <filename>.cs"
+            + " <prueba>.cs"
             + chr(27)
             + "[0m"
         )
